@@ -53,7 +53,7 @@ const Home = () => {
   };
 
   const clearTokenAndRedirect = () => {
-    localStorage.removeItem('token');
+    localStorage.clear();
     navigate('/login');
   };
 
@@ -420,7 +420,7 @@ const Home = () => {
 
   const handleLogout = () => {
     console.log('🚪 Home: Logout initiated');
-    localStorage.removeItem('token');
+    localStorage.clear();
     navigate('/login');
   };
 

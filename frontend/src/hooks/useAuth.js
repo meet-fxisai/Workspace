@@ -16,8 +16,7 @@ export const useAuth = () => {
   };
 
   const clearTokenAndRedirect = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.clear();
     navigate('/login');
   };
 
@@ -27,8 +26,7 @@ export const useAuth = () => {
     
     if (!isTokenValid(token)) {
       console.log('Token expired, clearing authentication data');
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      localStorage.clear();
       return false;
     }
     
@@ -46,7 +44,7 @@ export const useAuth = () => {
 
   const handleLogout = () => {
     console.log('🚪 Auth: Logout initiated');
-    localStorage.removeItem('token');
+    localStorage.clear();
     setIsAuthenticated(false);
     setCurrentUser(null);
     navigate('/login');

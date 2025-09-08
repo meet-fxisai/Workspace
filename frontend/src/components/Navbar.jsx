@@ -13,6 +13,7 @@ import ChatIcon from "@mui/icons-material/Chat";
 import WorkspacesIcon from '@mui/icons-material/Workspaces';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { deleteToken } from "../Services/auth.service";
+import socketService from '../Services/socket.service';
 import { useNavigate } from "react-router-dom";
 
 export default function Navbar({ switchFn, auth, changeAuth, user, onWorkspaceSelect }) {
@@ -228,7 +229,36 @@ export default function Navbar({ switchFn, auth, changeAuth, user, onWorkspaceSe
                 </Button>
               )}
 
-              
+              {/* Logout Button */}
+              <IconButton
+                onClick={() => {
+                  console.log('Logout clicked from Navbar');
+                  // Clear all localStorage data
+                  localStorage.clear();
+                  
+                  // Disconnect socket
+                  if (typeof socketService !== 'undefined' && socketService.disconnect) {
+                    socketService.disconnect();
+                  }
+                  
+                  // Update auth state
+                  if (changeAuth) {
+                    changeAuth(false);
+                  }
+                  
+                  // Navigate to login
+                  navigate('/login');
+                }}
+                sx={{
+                  color: '#ffffff',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                  }
+                }}
+                title="Logout"
+              >
+                <LogoutIcon />
+              </IconButton>
 
             </>
           )}

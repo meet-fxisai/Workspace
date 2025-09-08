@@ -10,8 +10,7 @@ export const saveToken = (token) => {
 };
 
 export const deleteToken = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
+  localStorage.clear();
 };
 
 export const token = () => localStorage.getItem("token");
@@ -185,9 +184,9 @@ export const searchQuery = async (query) => {
 export const logout = () => {
   console.log('🔐 AuthService: Logging out user');
   
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  console.log('🔐 AuthService: User data removed from localStorage');
+  // Clear all localStorage data
+  localStorage.clear();
+  console.log('🔐 AuthService: All localStorage data cleared');
   
   console.log('✅ AuthService: Logout completed');
 };

@@ -38,11 +38,11 @@ export const isAuthenticated = () => {
 
 export const clearUserData = () => {
   try {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    
     // Disconnect socket when clearing user data
     socketService.disconnect();
+    
+    // Clear all localStorage data
+    localStorage.clear();
     
     return true;
   } catch (error) {
