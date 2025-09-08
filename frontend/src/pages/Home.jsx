@@ -676,12 +676,16 @@ const Home = () => {
       {selectedUser ? (
         <>
           <div className="chat-header">
+            <div className="user-avatar">
+              {selectedUser.avatar ? (
+                <img src={selectedUser.avatar} alt={selectedUser.name || selectedUser.username || 'User'} />
+              ) : (
+                <div className="avatar-placeholder">
+                  {getUserInitials(selectedUser)}
+                </div>
+              )}
+            </div>
             <h3>{selectedUser.name || selectedUser.username || 'User'}</h3>
-            {currentChatId && (
-              <p style={{ fontSize: '12px', color: '#666', margin: '5px 0 0 0' }}>
-                Chat ID: {currentChatId}
-              </p>
-            )}
           </div>
           <div className="messages-container">
             {loadingMessages ? (
