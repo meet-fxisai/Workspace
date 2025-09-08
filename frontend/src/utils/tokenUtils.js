@@ -18,6 +18,50 @@ export const decodeToken = (token) => {
   }
 };
 
+export const isTokenExpired = (token) => {
+  try {
+    if (!token) return true;
+    
+    const decodedToken = decodeToken(token);
+    if (!decodedToken || !decodedToken.exp) return true;
+    
+    const currentTime = Date.now() / 1000; // Convert to seconds
+    return decodedToken.exp < currentTime;
+  } catch (error) {
+    console.error('Error checking token expiration:', error);
+    return true;
+  }
+};
+
+export const getTokenExpirationTime = (token) => {
+  try {
+    const decodedToken = decodeToken(token);
+    if (!decodedToken || !decodedToken.exp) return null;
+    
+    return new Date(decodedToken.exp * 1000); // Convert to milliseconds
+  } catch (error) {
+    console.error('Error getting token expiration time:', error);
+    return null;
+  }
+};
+
+export const getTimeUntilExpiration = (token) => {
+  try {
+    const expirationTime = getTokenExpirationTime(token);
+    if (!expirationTime) return null;
+    
+    const currentTime = new Date();
+    const timeUntilExpiration = expirationTime.getTime() - currentTime.getTime();
+    
+    if (timeUntilExpiration <= 0) return 0;
+    
+    return timeUntilExpiration; // Returns milliseconds
+  } catch (error) {
+    console.error('Error calculating time until expiration:', error);
+    return null;
+  }
+};
+
 export const getOrgIdFromToken = () => {
   const token = localStorage.getItem('token');
   const decodedToken = decodeToken(token);

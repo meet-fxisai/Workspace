@@ -658,10 +658,7 @@ const Home = () => {
                 </div>
                 <div className="user-info">
                   <div className="user-name">{user.name || user.username || `User ${index + 1}`}</div>
-                  <div className={`user-status ${user.status || 'online'}`}>
-                    <span className="status-dot"></span>
-                    {user.status || 'online'}
-                  </div>
+                  
                 </div>
               </div>
             ))

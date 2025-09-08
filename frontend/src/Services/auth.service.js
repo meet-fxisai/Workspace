@@ -1,5 +1,6 @@
 import axios from "axios";
 import { jwtDecode as jwt_decode } from "jwt-decode";
+import { isTokenExpired, decodeToken as decodeTokenUtil } from "../utils/tokenUtils";
 
 export const baseUrl = process.env.REACT_APP_API_BASE_URL;
 
@@ -10,6 +11,7 @@ export const saveToken = (token) => {
 
 export const deleteToken = () => {
   localStorage.removeItem("token");
+  localStorage.removeItem("user");
 };
 
 export const token = () => localStorage.getItem("token");
@@ -21,13 +23,15 @@ export const decodeToken = () => {
   }
   
   try {
-    const currUser = jwt_decode(currToken);
-    if (currUser && currUser.exp * 1000 < Date.now()) {
-      alert("Session expired! Redirecting to the login page.");
+    // Check if token is expired using our utility function
+    if (isTokenExpired(currToken)) {
+      console.log("Token expired, clearing authentication data");
       deleteToken();
-      window.location.href = "/";
+      // Instead of alert, we'll let the app handle the redirect
       return null;
     }
+    
+    const currUser = jwt_decode(currToken);
     return currUser;
   } catch (error) {
     console.error("Error decoding token:", error);

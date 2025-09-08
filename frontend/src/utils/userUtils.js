@@ -1,4 +1,5 @@
 import socketService from '../Services/socket.service';
+import { isTokenExpired } from './tokenUtils';
 
 // Utility functions for handling user data and tokens
 
@@ -24,6 +25,14 @@ export const getUser = () => {
 export const isAuthenticated = () => {
   const token = getToken();
   const user = getUser();
+  
+  // Check if token exists and is not expired
+  if (!token || isTokenExpired(token)) {
+    // Clear expired token and user data
+    clearUserData();
+    return false;
+  }
+  
   return !!(token && user);
 };
 
