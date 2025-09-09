@@ -1,5 +1,4 @@
 import React from "react";
-import { Box, Typography } from "@mui/material";
 import {
   formatMessageTime,
   getMessageAlignment,
@@ -14,44 +13,32 @@ const Message = ({ message, user }) => {
   const backgroundColor = getMessageBackgroundColor(message.authorId, user._id);
   const isSystem = isSystemMessage(message.authorId);
 
+  const alignmentClass = alignment === 'flex-end' ? 'justify-end' : 'justify-start';
+  const bgClass = alignment === 'flex-end' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-900';
+
   return (
-    <Box
-      sx={{
-        marginBottom: "12px",
-        display: "flex",
-        justifyContent: alignment,
-      }}
-    >
-      <Box
-        sx={{
-          padding: "8px 16px",
-          borderRadius: MESSAGE_STYLES.BORDER_RADIUS,
+    <div className={`mb-3 flex ${alignmentClass}`}>
+      <div
+        className={`px-4 py-2 rounded-lg max-w-xs lg:max-w-md shadow-sm ${bgClass}`}
+        style={{
           backgroundColor: backgroundColor,
           maxWidth: MESSAGE_STYLES.MAX_WIDTH,
-          boxShadow: MESSAGE_STYLES.BOX_SHADOW,
         }}
       >
         {isSystem ? (
-          <Typography variant="body2">
+          <p className="text-sm">
             {processMessageContent(message.content, user?.firstName)}
-          </Typography>
+          </p>
         ) : (
-          <Typography variant="body2">{message.content}</Typography>
+          <p className="text-sm">{message.content}</p>
         )}
         {!isSystem && (
-          <Typography
-            variant="caption"
-            sx={{
-              display: "block",
-              textAlign: "right",
-              marginTop: "4px",
-            }}
-          >
+          <p className="text-xs opacity-75 text-right mt-1">
             {formatMessageTime(message.createdAt)}
-          </Typography>
+          </p>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 };
 

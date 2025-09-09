@@ -66,14 +66,13 @@ const Home = () => {
   // Helper function to get user initials
   const getUserInitials = (user) => {
     if (!user) return 'U';
-    const name = user.name || user.username || 'User';
-    return name.charAt(0).toUpperCase();
+    const name = user.name || user.username || '';
+    return name.charAt(0).toUpperCase() || 'U';
   };
 
   // Helper function to get user display name
-  const getUserDisplayName = (user) => {
-    if (!user) return 'User';
-    return user.name || user.username || 'User';
+  const getUserDisplayName = () => {
+    return JSON.parse(localStorage.getItem('user')).name || 'User';
   };
 
   // Helper function to check if user is online
@@ -552,7 +551,7 @@ const Home = () => {
     return (
       <div className="left-nav">
         <div className="organization-header">
-          <div className="org-initial">{getUserInitials(currentUser)}</div>
+          <div className="org-initial">{JSON.parse(localStorage.getItem('user')).name.charAt(0).toUpperCase()}</div>
           <div className="org-name">
             {getUserDisplayName(currentUser)}
           </div>

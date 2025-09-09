@@ -1,5 +1,4 @@
 import React from "react";
-import { Box } from "@mui/material";
 import Message from "./Message";
 import { CHAT_STYLES } from "../constants/chatConstants";
 import { useAutoScroll } from "../hooks/useAutoScroll";
@@ -8,15 +7,12 @@ const MessageList = ({ messages, user }) => {
   const scrollRef = useAutoScroll(messages);
 
   return (
-    <Box
-      sx={{
-        flex: 1,
-        padding: "16px",
-        overflowY: "auto",
+    <div 
+      className="flex-1 p-4 overflow-y-auto bg-white scrollbar-hide"
+      style={{
         backgroundColor: CHAT_STYLES.MESSAGES_BACKGROUND,
-        "&::-webkit-scrollbar": { display: "none" },
-        "-ms-overflow-style": "none",
-        "scrollbar-width": "none",
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
       }}
     >
       {messages.map((message, index) => (
@@ -27,7 +23,7 @@ const MessageList = ({ messages, user }) => {
         />
       ))}
       <div ref={scrollRef} />
-    </Box>
+    </div>
   );
 };
 

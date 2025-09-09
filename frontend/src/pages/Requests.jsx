@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import { decodeToken, getUserByEmail } from "../Services/auth.service";
 import { toast } from "react-toastify";
-import { Card, CardContent, Typography, Button } from "@mui/material";
 import {
   getMyRequests,
   acceptRequest,
@@ -74,78 +73,51 @@ export default function Requests({ changeAuth, auth }) {
   return (
     <>
       <Navbar auth={auth} changeAuth={changeAuth} user={user} />
-      {requests.length >0 && <Typography
-        variant="h4"
-        sx={{
-          fontWeight: "bold",
-          marginTop: 2,
-          textAlign: "center",
-          color: "blue",
-        }}
-      >
-        Friend Requests
-      </Typography>}
+      {requests.length > 0 && (
+        <h1 className="text-3xl font-bold mt-4 text-center text-blue-600">
+          Friend Requests
+        </h1>
+      )}
 
       <div className="p-4 flex flex-wrap gap-4">
         {requests.map((request) => (
-          <Card key={request._id} className="w-full max-w-xs shadow-lg">
-            <CardContent className="text-center">
+          <div key={request._id} className="w-full max-w-xs bg-white rounded-lg shadow-lg">
+            <div className="p-4 text-center">
               <img
-                className=" mx-auto"
+                className="mx-auto mb-4 rounded-full"
                 src={request.from.gender === "Male" ? "male.png" : "female.png"}
-                width={"200px"}
+                width="200px"
                 alt={request.from.firstName}
               />
-              <Typography variant="h6" className="font-bold">
+              <h3 className="text-lg font-bold mb-2">
                 {request.from.firstName} {request.from.lastName}
-              </Typography>
-              <Typography variant="body2" className="text-gray-600">
+              </h3>
+              <p className="text-gray-600 mb-4">
                 {request.from.email}
-              </Typography>
-              <div className="mt-2 flex justify-between space-x-4">
-                <Button
+              </p>
+              <div className="flex justify-between space-x-2">
+                <button
                   onClick={() => handleAccept(request.from.email)}
-                  sx={{
-                    backgroundColor: "green",
-                    "&:hover": {
-                      backgroundColor: "darkgreen",
-                    },
-                    color: "white",
-                    width: "100%",
-                  }}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition-colors duration-200"
                 >
                   Accept
-                </Button>
-                <Button
+                </button>
+                <button
                   onClick={() => handleReject(request.from.email)}
-                  sx={{
-                    backgroundColor: "red",
-                    "&:hover": {
-                      backgroundColor: "darkred",
-                    },
-                    color: "white",
-                    width: "100%",
-                  }}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition-colors duration-200"
                 >
                   Reject
-                </Button>
+                </button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
         {requests.length === 0 && (
-          <Typography
-            variant="h4"
-            sx={{
-              fontWeight: "bold",
-              textAlign: "center",
-              marginTop: 4,
-              width:'100%',
-              color: "white",
-            }}
-          >
-            No new requests
-          </Typography>
+          <div className="w-full text-center mt-8">
+            <h1 className="text-3xl font-bold text-white">
+              No new requests
+            </h1>
+          </div>
         )}
       </div>
     </>

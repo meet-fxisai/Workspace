@@ -1,26 +1,17 @@
 import React from "react";
-import { Box, Typography } from "@mui/material";
-import ChatIcon from "@mui/icons-material/Chat";
-import { CHAT_STYLES, ICON_SIZES, STATUS_COLORS } from "../constants/chatConstants";
+import { MessageCircle } from "lucide-react";
 
 const EmptyChat = () => {
   return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="center"
-      height="100vh"
-      backgroundColor={CHAT_STYLES.EMPTY_CHAT_BACKGROUND}
-    >
-      <ChatIcon style={{ fontSize: ICON_SIZES.LARGE, color: STATUS_COLORS.OFFLINE }} />
-      <Typography variant="h5" style={{ marginTop: 16 }}>
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
+      <MessageCircle size={64} className="text-gray-400 mb-4" />
+      <h1 className="text-2xl font-semibold text-gray-800 mb-2">
         Chat App
-      </Typography>
-      <Typography variant="body2" style={{ marginTop: 8, color: "#666" }}>
+      </h1>
+      <p className="text-gray-600 text-center">
         Select a conversation to start chatting
-      </Typography>
-    </Box>
+      </p>
+    </div>
   );
 };
 

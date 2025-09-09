@@ -1,13 +1,4 @@
 import React from "react";
-import {
-  Avatar,
-  Box,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Typography,
-} from "@mui/material";
 
 const timeInterval = (timestamp) => {
   const now = new Date();
@@ -36,65 +27,58 @@ export default function FriendList({ friends, user, handleChatClick, currChat, i
     const replaced = content?.replace(user?.firstName, "you");
     return replaced;
   };
+  
   return (
-    <List>
+    <div className="space-y-2">
       {friends.map((friendData, index) => (
-        <div key={index+1}>        
-        <ListItem          
-          alignItems="flex-start"
-          onClick={()=>handleChatClick(friendData?.lastMessage.chatId, friendData?.friend)}
-          sx={{ backgroundColor:`${friendData?.lastMessage.chatId===currChat?'#eeeeee':'white'}`, my:1, boxShadow:'0.5px 0.5px 15px 1px rgba(0,0,0,0.3)', borderRadius:2 }}
-        >
-          <ListItemAvatar>
-            <Avatar
-              alt={friendData?.friend.firstName}
-              src={friendData?.friend?.gender==='Male'?'male.png': "female.png"}
-              sx={{ width: 56, height: 56, mx:1}}
-            />
-          </ListItemAvatar>
-          <ListItemText
-          sx={{mx:1}}
-            primary={
-              <Typography variant="body1" color="text.primary">
-                {`${friendData?.friend.firstName} ${friendData?.friend.lastName}`}
-              </Typography>
-            }
-            secondary={
-              <>
-                <Typography
-                  component="span"
-                  variant="body2" // Decreased text size
-                  color="text.secondary"
-                  sx={{ display: "block" }} // Ensures it's displayed as block to stack with time
-                >
-                  {processContent(friendData?.lastMessage.content)?.substring(
-                    0,
-                    50
-                  )}{" "}
+        <div key={index + 1}>        
+          <div          
+            onClick={() => handleChatClick(friendData?.lastMessage.chatId, friendData?.friend)}
+            className={`flex items-start p-4 rounded-lg shadow-md cursor-pointer transition-colors duration-200 ${
+              friendData?.lastMessage.chatId === currChat 
+                ? 'bg-gray-200' 
+                : 'bg-white hover:bg-gray-50'
+            }`}
+          >
+            <div className="flex-shrink-0 mr-4">
+              <div className="w-14 h-14 rounded-full overflow-hidden">
+                <img
+                  alt={friendData?.friend.firstName}
+                  src={friendData?.friend?.gender === 'Male' ? 'male.png' : "female.png"}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+            
+            <div className="flex-1 min-w-0">
+              <div className="mb-1">
+                <h3 className="text-base font-medium text-gray-900 truncate">
+                  {`${friendData?.friend.firstName} ${friendData?.friend.lastName}`}
+                </h3>
+              </div>
+              
+              <div className="mb-2">
+                <p className="text-sm text-gray-600 line-clamp-2">
+                  {processContent(friendData?.lastMessage.content)?.substring(0, 50)}
                   {friendData?.lastMessage.content.length > 50 && "..."}
-                </Typography>
-                <Box sx={{display:'flex', justifyContent:'space-between'}}>
-
-                <Typography
-                  variant="caption" // Decreased text size further for the time
-                  color="text.secondary"
-                >
+                </p>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-500">
                   {timeInterval(friendData?.lastMessage.createdAt)}
-                </Typography>
-                <Typography
-                  variant="caption" // Decreased text size further for the time
-                  color="green"
-                >
-                  {isOnline(friendData?.friend._id) && 'Online'}
-                </Typography>
-                </Box>
-              </>
-            }
-          />
-        </ListItem>
-        <hr/>
+                </span>
+                {isOnline(friendData?.friend._id) && (
+                  <span className="text-xs text-green-600 font-medium">
+                    Online
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          <hr className="border-gray-200" />
         </div>
       ))}
-    </List>
+    </div>
   );
 }

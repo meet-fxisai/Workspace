@@ -1,45 +1,49 @@
 import React from "react";
-import { Box, Typography, IconButton, Avatar } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { ArrowLeft } from "lucide-react";
 import { getUserAvatarSrc } from "../utils/chatUtils";
 import { CHAT_STYLES, STATUS_COLORS } from "../constants/chatConstants";
 
 const ChatHeader = ({ currFriend, isOnline, small, handleBack }) => {
   return (
-    <Box
-      sx={{
-        padding: "16px",
-        borderBottom: `1px solid ${CHAT_STYLES.BORDER_COLOR}`,
+    <div 
+      className="p-4 border-b bg-white flex items-center"
+      style={{
+        borderBottomColor: CHAT_STYLES.BORDER_COLOR,
         backgroundColor: CHAT_STYLES.HEADER_BACKGROUND,
-        display: "flex",
-        alignItems: "center",
       }}
     >
       {small && (
-        <IconButton
-          sx={{ mr: 1 }}
+        <button
+          className="mr-2 p-1 rounded-md hover:bg-gray-100 transition-colors duration-200"
           onClick={() => handleBack()}
         >
-          <ArrowBackIcon />
-        </IconButton>
+          <ArrowLeft className="w-5 h-5" />
+        </button>
       )}
-      <Avatar
-        alt={currFriend?.firstName}
-        src={getUserAvatarSrc(currFriend?.gender)}
-        sx={{ ...CHAT_STYLES.AVATAR_SIZE, mx: 1 }}
-      />
-      <Box>
-        <Typography variant="h6">
+      <div 
+        className="rounded-full mx-1 overflow-hidden"
+        style={CHAT_STYLES.AVATAR_SIZE}
+      >
+        <img
+          alt={currFriend?.firstName}
+          src={getUserAvatarSrc(currFriend?.gender)}
+          className="w-full h-full object-cover"
+        />
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold">
           {currFriend?.firstName} {currFriend?.lastName}
-        </Typography>
-        <Typography
-          variant="caption"
-          color={STATUS_COLORS.ONLINE}
-        >
-          {isOnline(currFriend?._id) && "Online"}
-        </Typography>
-      </Box>
-    </Box>
+        </h3>
+        {isOnline(currFriend?._id) && (
+          <p 
+            className="text-sm"
+            style={{ color: STATUS_COLORS.ONLINE }}
+          >
+            Online
+          </p>
+        )}
+      </div>
+    </div>
   );
 };
 

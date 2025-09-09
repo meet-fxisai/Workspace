@@ -1,5 +1,4 @@
 import React from "react";
-import { Box } from "@mui/material";
 import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
@@ -22,14 +21,11 @@ const ChatPanel = ({
   }
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
+    <div 
+      className="flex flex-col mx-auto border border-gray-300 overflow-hidden"
+      style={{
         height: CHAT_STYLES.CONTAINER_HEIGHT,
-        margin: "0 auto",
-        border: `1px solid ${CHAT_STYLES.BORDER_COLOR}`,
-        overflow: "hidden",
+        borderColor: CHAT_STYLES.BORDER_COLOR,
       }}
     >
       <ChatHeader
@@ -50,7 +46,7 @@ const ChatPanel = ({
         setMessages={setMessages}
         send={send}
       />
-    </Box>
+    </div>
   );
 };
 

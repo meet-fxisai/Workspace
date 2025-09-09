@@ -5,23 +5,8 @@ import {
   searchQuery,
 } from "../Services/auth.service";
 import { toast } from "react-toastify";
-import {
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  TextField,
-  InputAdornment,
-  Box,
-  IconButton,
-  useMediaQuery,
-  CircularProgress,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+import { Search, Check, X, MessageCircle } from "lucide-react";
 import Navbar from "../components/Navbar";
-import CheckIcon from "@mui/icons-material/Check";
-import ClearIcon from "@mui/icons-material/Clear";
-import ChatIcon from "@mui/icons-material/Chat";
 import {
   acceptRequest,
   rejectRequest,
@@ -38,7 +23,7 @@ export default function Explore({ changeAuth, auth }) {
   const [load, setLoad] = useState(false);
   const navigate = useNavigate();
 
-  const isSmallScreen = useMediaQuery("(max-width:600px)");
+  const isSmallScreen = window.innerWidth <= 600;
 
   useEffect(() => {
     const t = decodeToken();
@@ -120,225 +105,151 @@ export default function Explore({ changeAuth, auth }) {
 
   const handleChat = (friend) => {
     // logic to start chat
-    setLoad(true)
-    getChatIdByFriend(friend?._id).then(resp=>{
-      const chatId = resp?.data.chatId;
-      setLoad(false);
-      navigate('/chat',{state:{chatId,friend}})
+    setLoad(true);
+    getChatIdByFriend(friend?._id)
+      .then((resp) => {
+        const chatId = resp?.data.chatId;
+        setLoad(false);
+        navigate("/chat", { state: { chatId, friend } });
+      })
+      .catch((err) => {
+        toast.error(err.response?.data.message);
+        setLoad(false);
+      });
+  };
 
-    }).catch(err=>{
-      toast.error(err.response?.data.message);
-      setLoad(false);
-    })
-  }
   return (
     <>
       <Navbar auth={auth} changeAuth={changeAuth} user={user} />
-      <Typography
-        variant="h4"
-        sx={{
-          fontWeight: "bold",
-          marginTop: 2,
-          textAlign: "center",
-          color: "blue",
-        }}
-      >
+      <h1 className="text-3xl font-bold mt-4 text-center text-blue-600">
         Explore Friends
-      </Typography>
+      </h1>
 
       <div className="flex justify-center mt-4">
-        <TextField
-          value={query}
-          onChange={handleSearch}
-          variant="outlined"
-          placeholder="Search friends..."
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-            sx: {
-              borderRadius: "50px",
-              backgroundColor: "#f1f1f1",
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: "transparent",
-                },
-                "&:hover fieldset": {
-                  borderColor: "#ddd",
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: "#ccc",
-                },
-              },
-            },
-          }}
-          className="w-full max-w-md shadow-md"
-        />
+        <div className="w-full max-w-md relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-gray-400" />
+          </div>
+          <input
+            value={query}
+            onChange={handleSearch}
+            type="text"
+            placeholder="Search friends..."
+            className="w-full pl-10 pr-4 py-3 border border-transparent rounded-full bg-gray-100 focus:bg-white focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-md transition-all duration-200"
+          />
+        </div>
       </div>
 
-      <div className="p-4 flex flex-wrap gap-4">
+      <div className="p-4 flex flex-wrap gap-4 justify-center">
         {searchResults.length > 0
-          ? searchResults.map((user) => (
-              <Card key={user._id} className="w-full md:max-w-xs shadow-lg">
-                <CardContent className="text-center flex md:flex-col w-full justify-between ">
+          ? searchResults.map((searchUser) => (
+              <div key={searchUser._id} className="w-full max-w-xs bg-white rounded-lg shadow-lg">
+                <div className="p-4 text-center flex md:flex-col w-full justify-between">
                   <img
-                    className="md:mx-auto w-12 h-12 md:w-48 md:h-48 me-2"
-                    src={user.gender === "Male" ? "male.png" : "female.png"}
-                    alt={user.firstName}
+                    className="md:mx-auto w-12 h-12 md:w-48 md:h-48 me-2 rounded-full object-cover"
+                    src={searchUser.gender === "Male" ? "male.png" : "female.png"}
+                    alt={searchUser.firstName}
                   />
-                  <Box sx={{flexGrow:1}}>
-                    <Typography className="font-bold text-lg md:text-xl text-left md:text-center">
-                      {user.firstName} {user.lastName}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      className="text-gray-600 text-left md:text-center"
-                    >
-                      {user.email}
-                    </Typography>
-                  </Box>
+                  <div className="flex-grow">
+                    <h3 className="font-bold text-lg md:text-xl text-left md:text-center">
+                      {searchUser.firstName} {searchUser.lastName}
+                    </h3>
+                    <p className="text-gray-600 text-left md:text-center text-sm">
+                      {searchUser.email}
+                    </p>
+                  </div>
 
-                  <div className="mt-2 flex justify-between space-x-4">
-                    {user?.availability === 0 && (
-                      <Button
-                        onClick={() => handleAdd(user.email)}
-                        sx={{
-                          backgroundColor: "green",
-                          "&:hover": {
-                            backgroundColor: "darkgreen",
-                          },
-                          color: "white",
-                          width: "100%",
-                        }}
+                  <div className="mt-2 flex justify-between space-x-2">
+                    {searchUser?.availability === 0 && (
+                      <button
+                        onClick={() => handleAdd(searchUser.email)}
+                        className="bg-green-500 hover:bg-green-700 text-white py-2 px-4 rounded w-full transition-colors"
                       >
                         Add
-                      </Button>
+                      </button>
                     )}
 
-                    {user?.availability === 1 && (
-                      <Button
+                    {searchUser?.availability === 1 && (
+                      <button
                         disabled
-                        sx={{
-                          backgroundColor: "grey.400",
-                          color: "white",
-                          width: "100%",
-                          borderRadius: "8px",
-                          "&:hover": {
-                            backgroundColor: "grey.400",
-                          },
-                          cursor: "not-allowed",
-                        }}
+                        className="bg-gray-400 text-white py-2 px-4 rounded w-full cursor-not-allowed"
                       >
                         Sent
-                      </Button>
+                      </button>
                     )}
 
-                    {user?.availability === 2 && (
+                    {searchUser?.availability === 2 && (
                       <>
                         {isSmallScreen ? (
                           <>
-                            <IconButton
-                              onClick={() => handleAccept(user.email)}
-                              sx={{
-                                backgroundColor: "green",
-                                "&:hover": {
-                                  backgroundColor: "darkgreen",
-                                },
-                                color: "white",
-                              }}
+                            <button
+                              onClick={() => handleAccept(searchUser.email)}
+                              className="bg-green-500 hover:bg-green-700 text-white p-2 rounded flex items-center justify-center"
                             >
-                              <CheckIcon />
-                            </IconButton>
-                            <IconButton
-                              onClick={() => handleReject(user.email)}
-                              sx={{
-                                backgroundColor: "red",
-                                "&:hover": {
-                                  backgroundColor: "darkred",
-                                },
-                                color: "white",
-                              }}
+                              <Check className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => handleReject(searchUser.email)}
+                              className="bg-red-500 hover:bg-red-700 text-white p-2 rounded flex items-center justify-center"
                             >
-                              <ClearIcon />
-                            </IconButton>
+                              <X className="h-4 w-4" />
+                            </button>
                           </>
                         ) : (
                           <>
-                            <Button
-                              onClick={() => handleAdd(user._id)}
-                              sx={{
-                                backgroundColor: "green",
-                                "&:hover": {
-                                  backgroundColor: "darkgreen",
-                                },
-                                color: "white",
-                                width: "100%",
-                              }}
+                            <button
+                              onClick={() => handleAccept(searchUser.email)}
+                              className="bg-green-500 hover:bg-green-700 text-white py-2 px-4 rounded w-full transition-colors"
                             >
                               Accept
-                            </Button>
-                            <Button
-                              onClick={() => handleReject(user._id)}
-                              sx={{
-                                backgroundColor: "red",
-                                "&:hover": {
-                                  backgroundColor: "darkred",
-                                },
-                                color: "white",
-                                width: "100%",
-                              }}
+                            </button>
+                            <button
+                              onClick={() => handleReject(searchUser.email)}
+                              className="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded w-full transition-colors"
                             >
                               Reject
-                            </Button>
+                            </button>
                           </>
                         )}
                       </>
                     )}
-                    {user?.availability === 3 && (
+                    {searchUser?.availability === 3 && (
                       <>
                         {isSmallScreen ? (
-                          <IconButton
-                            onClick={() => handleChat(user.email)}
-                            sx={{
-                              backgroundColor: "blue",
-                              "&:hover": {
-                                backgroundColor: "darkblue",
-                              },
-                              color: "white",
-                            }}
+                          <button
+                            onClick={() => handleChat(searchUser)}
+                            className="bg-blue-500 hover:bg-blue-700 text-white p-2 rounded flex items-center justify-center"
+                            disabled={load}
                           >
-                            {load ? <CircularProgress size={'16px'} /> :<ChatIcon />}
-                          </IconButton>
+                            {load ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            ) : (
+                              <MessageCircle className="h-4 w-4" />
+                            )}
+                          </button>
                         ) : (
-                          <Button
-                            onClick={() => handleChat(user)}
-                            sx={{
-                              backgroundColor: "blue",
-                              "&:hover": {
-                                backgroundColor: "darkblue",
-                              },
-                              color: "white",
-                              width: "100%",
-                            }}
+                          <button
+                            onClick={() => handleChat(searchUser)}
+                            className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded w-full transition-colors flex items-center justify-center"
+                            disabled={load}
                           >
-                            {load?<CircularProgress size={'20px'} /> :'Chat'}
-                          </Button>
+                            {load ? (
+                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                            ) : (
+                              "Chat"
+                            )}
+                          </button>
                         )}
                       </>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))
           : query && (
-              <Typography
-                variant="h6"
-                sx={{ textAlign: "center", width: "100%", marginTop: 2 }}
-              >
-                No results found.
-              </Typography>
+              <div className="text-center w-full mt-8">
+                <p className="text-lg text-gray-600">No results found.</p>
+              </div>
             )}
       </div>
     </>
