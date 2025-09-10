@@ -25,6 +25,15 @@ const Message = sequelize.define('Message', {
         },
         onDelete: 'SET NULL'
     },
+    parentMessageId: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        references: {
+            model: 'Messages',
+            key: 'id'
+        },
+        onDelete: 'SET NULL'
+    },
     chatId: {
         type: DataTypes.UUID,
         allowNull: false,

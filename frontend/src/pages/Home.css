@@ -187,10 +187,47 @@
   border-radius: 8px;
   overflow: hidden;
   border: 2px solid #333333;
+  position: relative;
 }
 
 .user-item.selected .user-avatar {
   border-color: #000000;
+}
+
+/* Online status indicator */
+.status-indicator {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid #1a1a1a;
+  z-index: 2;
+}
+
+.status-indicator.online {
+  background-color: #23a559;
+  /* box-shadow: 0 0 0 2px #1a1a1a; */
+}
+
+.status-indicator.offline {
+  background-color: transparent;
+  border: 2px solid #666666;
+  opacity: 0.6;
+}
+
+/* Chat header status indicator - slightly larger */
+.chat-header .status-indicator {
+  width: 8px;
+  height: 8px;
+  border: 1px #000000;
+  bottom: 1px;
+  right: 1px;
+}
+
+.chat-header .status-indicator.online {
+  background-color: #23a559;
 }
 
 .user-avatar img {
@@ -260,6 +297,37 @@
   border-bottom: 1px solid #e5e5e5;
   background-color: #ffffff;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.chat-header .user-avatar {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.chat-header .user-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.chat-header .avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  color: #ffffff;
+  background-color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.3px;
+  text-transform: uppercase;
 }
 
 .chat-header h3 {

@@ -1,27 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  TextField, 
-  Button, 
-  FormControl, 
-  FormLabel, 
-  RadioGroup, 
-  FormControlLabel, 
-  Radio, 
-  Select, 
-  MenuItem, 
-  InputLabel, 
-  CircularProgress, 
-  IconButton, 
-  InputAdornment,
-  Box,
-  Typography,
-  Alert,
-  Chip,
-  OutlinedInput,
-  Paper,
-  Container
-} from '@mui/material';
-import { Visibility, VisibilityOff, CheckCircle, Error } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -46,7 +23,7 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
   // Data state
   const [organizations, setOrganizations] = useState([]);
   const [workspaces, setWorkspaces] = useState([]);
@@ -69,13 +46,13 @@ const Register = () => {
         console.warn('No token found in localStorage');
         return null;
       }
-      
+
       const tokenParts = token.split('.');
       if (tokenParts.length !== 3) {
         console.warn('Invalid token format');
         return null;
       }
-      
+
       const base64Url = tokenParts[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
       const jsonPayload = decodeURIComponent(
@@ -84,7 +61,7 @@ const Register = () => {
           .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
           .join('')
       );
-      
+
       return JSON.parse(jsonPayload);
     } catch (error) {
       console.error('Error decoding token:', error);
@@ -113,7 +90,7 @@ const Register = () => {
   // Validation
   const validateForm = () => {
     const tempErrors = {};
-    
+
     // Name validation
     if (!formData.name?.trim()) {
       tempErrors.name = 'Name is required';
@@ -122,7 +99,7 @@ const Register = () => {
     } else if (formData.name.trim().length > 50) {
       tempErrors.name = 'Name must be less than 50 characters';
     }
-    
+
     // Email validation
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!formData.email?.trim()) {
@@ -132,7 +109,7 @@ const Register = () => {
     } else if (formData.email.trim().length > 100) {
       tempErrors.email = 'Email must be less than 100 characters';
     }
-    
+
     // Password validation
     if (!formData.password) {
       tempErrors.password = 'Password is required';
@@ -141,21 +118,21 @@ const Register = () => {
     } else if (formData.password.length > 100) {
       tempErrors.password = 'Password must be less than 100 characters';
     }
-    
+
     // Confirm password validation
     if (!formData.confirmPassword) {
       tempErrors.confirmPassword = 'Please confirm your password';
     } else if (formData.confirmPassword !== formData.password) {
       tempErrors.confirmPassword = 'Passwords do not match';
     }
-    
+
     // Role validation
     if (!formData.role) {
       tempErrors.role = 'Please select a role';
     } else if (!['member', 'admin'].includes(formData.role)) {
       tempErrors.role = 'Invalid role selected';
     }
-    
+
     // Organization validation
     if (!formData.organization) {
       tempErrors.organization = 'Please select an organization';
@@ -174,7 +151,7 @@ const Register = () => {
         tempErrors.workspaces = 'Some selected workspaces are invalid';
       }
     }
-    
+
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
@@ -193,13 +170,13 @@ const Register = () => {
       try {
         setLoadingOrgs(true);
         setApiError('');
-        
+
         const headers = getAuthHeaders();
         const response = await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL}/api/organizations`, 
+          `${process.env.REACT_APP_API_BASE_URL}/api/organizations`,
           { headers }
         );
-        
+
         const orgsData = response.data;
         if (!Array.isArray(orgsData)) {
           console.warn('Organizations response is not an array:', orgsData);
@@ -210,7 +187,7 @@ const Register = () => {
         }
       } catch (error) {
         console.error('Error fetching organizations:', error);
-        
+
         if (error.response?.status === 401) {
           setApiError('Authentication failed. Please login again.');
           toast.error('Session expired. Please login again.');
@@ -242,13 +219,13 @@ const Register = () => {
       try {
         setLoadingWorkspaces(true);
         setApiError('');
-        
+
         const headers = getAuthHeaders();
         const response = await axios.get(
           `${process.env.REACT_APP_API_BASE_URL}/api/workspaces/organization/${formData.organization}`,
           { headers }
         );
-        
+
         const workspacesData = response.data;
         if (!Array.isArray(workspacesData)) {
           console.warn('Workspaces response is not an array:', workspacesData);
@@ -256,10 +233,10 @@ const Register = () => {
         } else {
           setWorkspaces(workspacesData);
         }
-        
+
       } catch (error) {
         console.error('Error fetching workspaces:', error);
-        
+
         if (error.response?.status === 404) {
           setWorkspaces([]);
           toast.info('No workspaces found for this organization');
@@ -284,22 +261,22 @@ const Register = () => {
     try {
       console.log('Registering user with payload:', payload);
       updateRegistrationStep('user', 'loading', 'Creating user account...');
-      
+
       const headers = getAuthHeaders();
       const response = await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/api/users/register-user`,
         payload,
         { headers }
       );
-      
+
       console.log('User registration response:', response.data);
       updateRegistrationStep('user', 'success', 'User account created successfully');
       return response.data;
     } catch (error) {
       console.error('Error registering user:', error);
-      
+
       let errorMessage = 'Failed to register user';
-      
+
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error.response?.data?.error) {
@@ -311,7 +288,7 @@ const Register = () => {
       } else if (error.response?.status === 401) {
         errorMessage = 'Authentication failed. Please login again.';
       }
-      
+
       updateRegistrationStep('user', 'error', errorMessage);
       throw new Error(errorMessage);
     }
@@ -321,7 +298,7 @@ const Register = () => {
     try {
       console.log('Assigning user to workspaces:', { userId, workspaceIds });
       updateRegistrationStep('workspaces', 'loading', 'Assigning user to workspaces...');
-      
+
       const headers = getAuthHeaders();
       const response = await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/api/userworkspaces/admin/assign-workspaces`,
@@ -331,17 +308,17 @@ const Register = () => {
         },
         { headers }
       );
-      
+
       console.log('Workspace assignment response:', response.data);
       updateRegistrationStep('workspaces', 'success', 'User assigned to workspaces successfully');
       return response.data;
     } catch (error) {
       console.error('Error assigning user to workspaces:', error);
-      
-      const errorMessage = error.response?.data?.message || 
-                           error.response?.data?.error || 
-                           'Failed to assign user to workspaces';
-      
+
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        'Failed to assign user to workspaces';
+
       updateRegistrationStep('workspaces', 'error', errorMessage);
       throw new Error(errorMessage);
     }
@@ -351,14 +328,14 @@ const Register = () => {
     try {
       console.log('Creating chats for user in workspaces:', { userId, workspaceIds });
       updateRegistrationStep('chats', 'loading', 'Creating chats for user...');
-      
+
       const chatResults = [];
       const headers = getAuthHeaders();
-      
+
       for (const workspaceId of workspaceIds) {
         try {
           console.log(`Creating chats for user ${userId} in workspace ${workspaceId}`);
-          
+
           const response = await axios.post(
             `${process.env.REACT_APP_API_BASE_URL}/api/chats/workspace/create-chats`,
             {
@@ -367,7 +344,7 @@ const Register = () => {
             },
             { headers }
           );
-          
+
           console.log(`Chat creation response for workspace ${workspaceId}:`, response.data);
           chatResults.push({
             workspaceId,
@@ -383,19 +360,19 @@ const Register = () => {
           });
         }
       }
-      
+
       const successfulChats = chatResults.filter(result => result.success);
       const failedChats = chatResults.filter(result => !result.success);
-      
+
       if (successfulChats.length === workspaceIds.length) {
         updateRegistrationStep('chats', 'success', 'All chats created successfully');
       } else if (successfulChats.length > 0) {
-        updateRegistrationStep('chats', 'warning', 
+        updateRegistrationStep('chats', 'warning',
           `Chats created for ${successfulChats.length}/${workspaceIds.length} workspaces`);
       } else {
         updateRegistrationStep('chats', 'error', 'Failed to create chats for any workspace');
       }
-      
+
       return chatResults;
     } catch (error) {
       console.error('Error in chat creation process:', error);
@@ -407,7 +384,7 @@ const Register = () => {
   // Event handlers
   const handleChange = (event) => {
     const { name, value } = event.target;
-    
+
     setFormData(prev => {
       const newFormData = {
         ...prev,
@@ -420,7 +397,7 @@ const Register = () => {
 
       return newFormData;
     });
-    
+
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -471,7 +448,7 @@ const Register = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    
+
     if (!validateForm()) {
       toast.error('Please fix the errors in the form');
       return;
@@ -479,7 +456,7 @@ const Register = () => {
 
     setLoading(true);
     setApiError('');
-    
+
     try {
       // Step 1: Register the user
       const userPayload = {
@@ -491,7 +468,7 @@ const Register = () => {
       };
 
       const registerResponse = await registerUser(userPayload);
-      
+
       // Extract user ID from response
       let userId = null;
       if (registerResponse.user?.id) {
@@ -503,7 +480,7 @@ const Register = () => {
       } else if (registerResponse.data?.user?.id) {
         userId = registerResponse.data.user.id;
       }
-      
+
       if (!userId) {
         console.error('Full registration response:', registerResponse);
         throw new Error('User ID not found in registration response. Please check the response format.');
@@ -523,7 +500,7 @@ const Register = () => {
             console.error('Error creating chats:', chatError);
             // Don't fail the entire process for chat errors
           }
-          
+
         } catch (assignError) {
           console.error('Error assigning user to workspaces:', assignError);
           // Don't attempt chat creation if workspace assignment failed
@@ -532,7 +509,7 @@ const Register = () => {
 
       toast.success('User registration process completed successfully!');
       resetForm();
-      
+
     } catch (error) {
       console.error('Registration process error:', error);
       const errorMessage = error.message || 'Registration failed. Please try again.';
@@ -549,310 +526,383 @@ const Register = () => {
 
   const getStepIcon = (status) => {
     switch (status) {
-      case 'success': return <CheckCircle color="success" />;
-      case 'error': return <Error color="error" />;
-      case 'loading': return <CircularProgress size={20} />;
-      default: return null;
+      case 'success': return '✅';
+      case 'error': return '❌';
+      case 'loading': return '⏳';
+      default: return '⏸️';
     }
   };
 
   const getStepColor = (status) => {
     switch (status) {
-      case 'success': return 'success';
-      case 'error': return 'error';
-      case 'warning': return 'warning';
-      case 'loading': return 'info';
-      default: return 'default';
+      case 'success': return 'text-green-600';
+      case 'error': return 'text-red-600';
+      case 'warning': return 'text-yellow-600';
+      case 'loading': return 'text-blue-600';
+      default: return 'text-gray-600';
     }
   };
 
   return (
     <div>
-      <Navbar auth={true} changeAuth={() => {}} user={currentUser} />
-      
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ fontWeight: 'bold' }}>
-            Register New User
-          </Typography>
+      <Navbar auth={true} changeAuth={() => { }} user={currentUser} />
 
-          <Alert severity="info" sx={{ mb: 3 }}>
-            You are registering a new user for your organization. This will create the user, assign them to selected workspaces, and create necessary chats.
-          </Alert>
+
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 pt-auto">
+        <div className="flex flex-col items-center bg-white justify-center p-6 border-2 rounded-lg shadow-lg max-w-2xl w-full max-h-screen overflow-y-auto">
+          <h1 className="text-3xl text-black font-bold mb-4 underline">
+            Register New User
+          </h1>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 w-full">
+            <div className="flex items-start">
+              <div className="text-blue-600 mr-2">ℹ️</div>
+              <p className="text-blue-800 text-xs">
+                You are registering a new user for your organization. This will create the user, assign them to selected workspaces, and create necessary chats.
+              </p>
+            </div>
+          </div>
 
           {apiError && (
-            <Alert severity="error" sx={{ mb: 3 }}>
-              {apiError}
-            </Alert>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 w-full">
+              <div className="flex items-start">
+                <div className="text-red-600 mr-2">❌</div>
+                <p className="text-red-800 text-xs">{apiError}</p>
+              </div>
+            </div>
           )}
 
           {/* Registration Progress */}
           {loading && (
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h6" gutterBottom>Registration Progress:</Typography>
-              
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                {getStepIcon(registrationSteps.user.status)}
-                <Typography sx={{ ml: 1 }}>
-                  User Creation: {registrationSteps.user.message || 'Waiting...'}
-                </Typography>
-              </Box>
-              
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                {getStepIcon(registrationSteps.workspaces.status)}
-                <Typography sx={{ ml: 1 }}>
-                  Workspace Assignment: {registrationSteps.workspaces.message || 'Waiting...'}
-                </Typography>
-              </Box>
-              
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                {getStepIcon(registrationSteps.chats.status)}
-                <Typography sx={{ ml: 1 }}>
-                  Chat Creation: {registrationSteps.chats.message || 'Waiting...'}
-                </Typography>
-              </Box>
-            </Box>
+            <div className="mb-4 w-full">
+              <h2 className="text-sm font-semibold mb-2 text-gray-800">Registration Progress:</h2>
+
+              <div className="space-y-2">
+                <div className="flex items-center">
+                  <span className="mr-2 text-sm">{getStepIcon(registrationSteps.user.status)}</span>
+                  <span className={`text-xs ${getStepColor(registrationSteps.user.status)}`}>
+                    User Creation: {registrationSteps.user.message || 'Waiting...'}
+                  </span>
+                </div>
+
+                <div className="flex items-center">
+                  <span className="mr-2 text-sm">{getStepIcon(registrationSteps.workspaces.status)}</span>
+                  <span className={`text-xs ${getStepColor(registrationSteps.workspaces.status)}`}>
+                    Workspace Assignment: {registrationSteps.workspaces.message || 'Waiting...'}
+                  </span>
+                </div>
+
+                <div className="flex items-center">
+                  <span className="mr-2 text-sm">{getStepIcon(registrationSteps.chats.status)}</span>
+                  <span className={`text-xs ${getStepColor(registrationSteps.chats.status)}`}>
+                    Chat Creation: {registrationSteps.chats.message || 'Waiting...'}
+                  </span>
+                </div>
+              </div>
+            </div>
           )}
 
-          <Box component="form" onSubmit={handleSubmit} noValidate>
+          <form onSubmit={handleSubmit} className="space-y-4 w-full">
             {/* Name Field */}
-            <TextField
-              name="name"
-              label="Full Name"
-              variant="outlined"
-              fullWidth
-              required
-              error={!!errors.name}
-              helperText={errors.name}
-              onChange={handleChange}
-              value={formData.name}
-              disabled={isFormDisabled}
-              sx={{ mb: 2 }}
-            />
-
-            {/* Email Field */}
-            <TextField
-              name="email"
-              type="email"
-              label="Email Address"
-              variant="outlined"
-              fullWidth
-              required
-              error={!!errors.email}
-              helperText={errors.email}
-              onChange={handleChange}
-              value={formData.email}
-              disabled={isFormDisabled}
-              sx={{ mb: 2 }}
-            />
-
-            {/* Password Field */}
-            <TextField
-              name="password"
-              type={showPassword ? "text" : "password"}
-              label="Password"
-              variant="outlined"
-              fullWidth
-              required
-              error={!!errors.password}
-              helperText={errors.password}
-              onChange={handleChange}
-              value={formData.password}
-              disabled={isFormDisabled}
-              sx={{ mb: 2 }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                      disabled={isFormDisabled}
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                )
-              }}
-            />
-
-            {/* Confirm Password Field */}
-            <TextField
-              name="confirmPassword"
-              type={showConfirmPassword ? "text" : "password"}
-              label="Confirm Password"
-              variant="outlined"
-              fullWidth
-              required
-              error={!!errors.confirmPassword}
-              helperText={errors.confirmPassword}
-              onChange={handleChange}
-              value={formData.confirmPassword}
-              disabled={isFormDisabled}
-              sx={{ mb: 2 }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle confirm password visibility"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      edge="end"
-                      disabled={isFormDisabled}
-                    >
-                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                )
-              }}
-            />
-
-            {/* Role Selection */}
-            <FormControl component="fieldset" error={!!errors.role} fullWidth sx={{ mb: 2 }}>
-              <FormLabel component="legend" required>Role</FormLabel>
-              <RadioGroup
-                row
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-              >
-                <FormControlLabel 
-                  value="member" 
-                  control={<Radio />} 
-                  label="Member" 
-                  disabled={isFormDisabled}
-                />
-                <FormControlLabel 
-                  value="admin" 
-                  control={<Radio />} 
-                  label="Admin" 
-                  disabled={isFormDisabled}
-                />
-              </RadioGroup>
-              {errors.role && (
-                <Typography variant="caption" color="error" sx={{ mt: 1 }}>
-                  {errors.role}
-                </Typography>
-              )}
-            </FormControl>
-
-            {/* Organization Selection */}
-            <FormControl fullWidth error={!!errors.organization} sx={{ mb: 2 }}>
-              <InputLabel id="organization-label">Organization *</InputLabel>
-              <Select
-                labelId="organization-label"
-                name="organization"
-                value={formData.organization}
-                label="Organization *"
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                Full Name *
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${errors.name ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
+                  } ${isFormDisabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                value={formData.name}
                 onChange={handleChange}
                 disabled={isFormDisabled}
+                placeholder="Enter your full name"
+              />
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+              )}
+            </div>
+
+            {/* Email Field */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email Address *
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${errors.email ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
+                  } ${isFormDisabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                value={formData.email}
+                onChange={handleChange}
+                disabled={isFormDisabled}
+                placeholder="Enter your email address"
+              />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+              )}
+            </div>
+
+            {/* Password Field */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                Password *
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  className={`w-full px-3 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${errors.password ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
+                    } ${isFormDisabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  value={formData.password}
+                  onChange={handleChange}
+                  disabled={isFormDisabled}
+                  placeholder="Enter your password"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed"
+                  onClick={() => setShowPassword(!showPassword)}
+                  disabled={isFormDisabled}
+                >
+                  {showPassword ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+              )}
+            </div>
+
+            {/* Confirm Password Field */}
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                Confirm Password *
+              </label>
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  required
+                  className={`w-full px-3 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${errors.confirmPassword ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
+                    } ${isFormDisabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  disabled={isFormDisabled}
+                  placeholder="Confirm your password"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  disabled={isFormDisabled}
+                >
+                  {showConfirmPassword ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              {errors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+              )}
+            </div>
+
+            {/* Role Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Role *</label>
+              <div className="flex space-x-6">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="member"
+                    checked={formData.role === 'member'}
+                    onChange={handleChange}
+                    disabled={isFormDisabled}
+                    className="h-4 w-4 text-black focus:ring-black border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Member</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="admin"
+                    checked={formData.role === 'admin'}
+                    onChange={handleChange}
+                    disabled={isFormDisabled}
+                    className="h-4 w-4 text-black focus:ring-black border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Admin</span>
+                </label>
+              </div>
+              {errors.role && (
+                <p className="mt-1 text-sm text-red-600">{errors.role}</p>
+              )}
+            </div>
+
+            {/* Organization Selection */}
+            <div>
+              <label htmlFor="organization" className="block text-sm font-medium text-gray-700 mb-1">
+                Organization *
+              </label>
+              <select
+                id="organization"
+                name="organization"
+                value={formData.organization}
+                onChange={handleChange}
+                disabled={isFormDisabled}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${errors.organization ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
+                  } ${isFormDisabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
               >
+                <option value="">Select an organization</option>
                 {loadingOrgs ? (
-                  <MenuItem disabled>
-                    <CircularProgress size={20} sx={{ mr: 1 }} /> Loading organizations...
-                  </MenuItem>
+                  <option disabled>⏳ Loading organizations...</option>
                 ) : organizations.length === 0 ? (
-                  <MenuItem disabled>No organizations available</MenuItem>
+                  <option disabled>No organizations available</option>
                 ) : (
                   organizations.map(org => (
-                    <MenuItem key={org.id} value={org.id}>
+                    <option key={org.id} value={org.id}>
                       {org.name}
-                    </MenuItem>
+                    </option>
                   ))
                 )}
-              </Select>
+              </select>
               {errors.organization && (
-                <Typography variant="caption" color="error" sx={{ mt: 1 }}>
-                  {errors.organization}
-                </Typography>
+                <p className="mt-1 text-sm text-red-600">{errors.organization}</p>
               )}
-            </FormControl>
+            </div>
 
             {/* Workspace Selection */}
-            <FormControl fullWidth error={!!errors.workspaces} sx={{ mb: 3 }}>
-              <InputLabel id="workspaces-label">Workspaces *</InputLabel>
-              <Select
-                labelId="workspaces-label"
-                multiple
-                value={formData.workspaces}
-                onChange={handleWorkspaceChange}
-                input={<OutlinedInput label="Workspaces *" />}
-                disabled={isFormDisabled || !formData.organization}
-                renderValue={(selected) => (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {selected.map((value) => {
-                      const workspace = workspaces.find(w => w.id === value);
-                      return (
-                        <Chip 
-                          key={value} 
-                          label={workspace?.name || value} 
-                          size="small" 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Workspaces *
+              </label>
+              <div className={`border rounded-md p-3 max-h-32 overflow-y-auto ${errors.workspaces ? 'border-red-500 bg-red-50' : 'border-gray-300'} ${isFormDisabled || !formData.organization ? 'bg-gray-100' : 'bg-white'
+                }`}>
+                {!formData.organization ? (
+                  <p className="text-gray-500 text-sm">Please select an organization first</p>
+                ) : loadingWorkspaces ? (
+                  <p className="text-gray-500 text-sm">⏳ Loading workspaces...</p>
+                ) : workspaces.length === 0 ? (
+                  <p className="text-gray-500 text-sm">No workspaces available for this organization</p>
+                ) : (
+                  <div className="space-y-2">
+                    {workspaces.map(workspace => (
+                      <label key={workspace.id} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          value={workspace.id}
+                          checked={formData.workspaces.includes(workspace.id)}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            const isChecked = e.target.checked;
+                            setFormData(prev => ({
+                              ...prev,
+                              workspaces: isChecked
+                                ? [...prev.workspaces, value]
+                                : prev.workspaces.filter(id => id !== value)
+                            }));
+                            if (errors.workspaces) {
+                              setErrors(prev => ({ ...prev, workspaces: '' }));
+                            }
+                          }}
+                          disabled={isFormDisabled}
+                          className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded"
                         />
+                        <span className="ml-2 text-sm text-gray-700">{workspace.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected workspaces display */}
+              {formData.workspaces.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-xs text-gray-600 mb-1">Selected: {formData.workspaces.length} workspace(s)</p>
+                  <div className="flex flex-wrap gap-1">
+                    {formData.workspaces.slice(0, 3).map(wsId => {
+                      const workspace = workspaces.find(w => w.id === wsId);
+                      return (
+                        <span
+                          key={wsId}
+                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                        >
+                          {workspace?.name || wsId}
+                        </span>
                       );
                     })}
-                  </Box>
-                )}
-              >
-                {!formData.organization ? (
-                  <MenuItem disabled>Please select an organization first</MenuItem>
-                ) : loadingWorkspaces ? (
-                  <MenuItem disabled>
-                    <CircularProgress size={20} sx={{ mr: 1 }} /> Loading workspaces...
-                  </MenuItem>
-                ) : workspaces.length === 0 ? (
-                  <MenuItem disabled>No workspaces available for this organization</MenuItem>
-                ) : (
-                  workspaces.map(workspace => (
-                    <MenuItem key={workspace.id} value={workspace.id}>
-                      {workspace.name}
-                    </MenuItem>
-                  ))
-                )}
-              </Select>
-              {errors.workspaces && (
-                <Typography variant="caption" color="error" sx={{ mt: 1 }}>
-                  {errors.workspaces}
-                </Typography>
+                    {formData.workspaces.length > 3 && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        +{formData.workspaces.length - 3} more
+                      </span>
+                    )}
+                  </div>
+                </div>
               )}
-            </FormControl>
+
+              {errors.workspaces && (
+                <p className="mt-1 text-sm text-red-600">{errors.workspaces}</p>
+              )}
+            </div>
 
             {/* Submit Button */}
-            <Button 
-              type="submit" 
-              fullWidth
-              variant="contained"
+            <button
+              type="submit"
               disabled={isFormDisabled}
-              sx={{
-                py: 1.5,
-                backgroundColor: "primary.main",
-                "&:disabled": {
-                  backgroundColor: "grey.400",
-                }
-              }}
+              className={`w-full mt-6 py-3 px-4 font-medium rounded-md text-white transition-colors duration-200 ${isFormDisabled
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2'
+                }`}
             >
               {loading ? (
-                <>
-                  <CircularProgress size={20} sx={{ color: 'white', mr: 1 }} />
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                   Processing Registration...
-                </>
+                </div>
               ) : (
                 'Register User'
               )}
-            </Button>
-          </Box>
+            </button>
+          </form>
 
           {/* Navigation */}
-          <Box sx={{ mt: 3, textAlign: 'center' }}>
-            <Button 
-              variant="text" 
+          <div className="mt-4 text-center">
+            <button
+              type="button"
               onClick={() => navigate('/home')}
               disabled={loading}
-              sx={{ textTransform: 'none' }}
+              className={`font-bold text-black hover:text-gray-800 underline focus:outline-none ${loading ? 'cursor-not-allowed opacity-50' : ''
+                }`}
             >
               Back to Home
-            </Button>
-          </Box>
-        </Paper>
-      </Container>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

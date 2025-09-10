@@ -38,13 +38,11 @@ const ProtectedRoute = ({ children }) => {
     // Check if token is expired
     const currentTime = Date.now() / 1000;
     if (decodedToken.exp < currentTime) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      localStorage.clear();
       return <Navigate to="/login" replace />;
     }
   } catch (error) {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.clear();
     return <Navigate to="/login" replace />;
   }
   
@@ -73,7 +71,7 @@ const PublicRoute = ({ children }) => {
         return <Navigate to="/home" replace />;
       }
     } catch (error) {
-      localStorage.removeItem('token');
+      localStorage.clear();
     }
   }
   
@@ -108,8 +106,7 @@ function App() {
         }
       } catch (error) {
         console.error('❌ App: Error parsing user data:', error);
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
+        localStorage.clear();
       }
     } else {
       console.log('🔐 App: No existing login found');

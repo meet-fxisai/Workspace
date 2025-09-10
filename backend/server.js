@@ -1,4 +1,3 @@
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const http = require('http');
@@ -130,8 +129,8 @@ app.use('/api/messages', messageRoutes)
 const PORT = process.env.PORT || 3000;
 
 syncModels().then(() => {
-	server.listen(PORT, () => {
-		console.log(`Server running on port ${PORT}`);
-		console.log(`Socket.io server ready for connections`);
-	});
+    server.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+        console.log(`Socket.io server ready for connections`);
+    });
 });

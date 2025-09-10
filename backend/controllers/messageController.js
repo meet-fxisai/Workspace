@@ -13,7 +13,8 @@ exports.sendMessage = async (req, res) => {
       message,
       contentType,
       authorId,
-      chatId
+      chatId,
+      parentMessageId: req.body.parentMessageId || null
     });
 
     // Get user info for the message
@@ -28,6 +29,7 @@ exports.sendMessage = async (req, res) => {
         authorId: authorId,
         senderName: author.name,
         chatId: chatId,
+        parentMessageId: newMessage.parentMessageId,
         createdAt: newMessage.createdAt,
         contentType: contentType
       };

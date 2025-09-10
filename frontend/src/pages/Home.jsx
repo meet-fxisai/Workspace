@@ -23,6 +23,7 @@ const Home = () => {
   const [currentChatId, setCurrentChatId] = useState(null); // Current chat ID
   const [sendingMessage, setSendingMessage] = useState(false); // Loading state for sending
   const [loadingMessages, setLoadingMessages] = useState(false); // Loading state for fetching messages
+  const [onlineUsers, setOnlineUsers] = useState([]); // Track online users
 
   // Utility functions
   const getTokenFromStorage = () => localStorage.getItem('token');
@@ -53,7 +54,7 @@ const Home = () => {
   };
 
   const clearTokenAndRedirect = () => {
-    localStorage.removeItem('token');
+    localStorage.clear();
     navigate('/login');
   };
 
@@ -65,14 +66,18 @@ const Home = () => {
   // Helper function to get user initials
   const getUserInitials = (user) => {
     if (!user) return 'U';
-    const name = user.name || user.username || 'User';
-    return name.charAt(0).toUpperCase();
+    const name = user.name || user.username || '';
+    return name.charAt(0).toUpperCase() || 'U';
   };
 
   // Helper function to get user display name
-  const getUserDisplayName = (user) => {
-    if (!user) return 'User';
-    return user.name || user.username || 'User';
+  const getUserDisplayName = () => {
+    return JSON.parse(localStorage.getItem('user')).name || 'User';
+  };
+
+  // Helper function to check if user is online
+  const isUserOnline = (userId) => {
+    return onlineUsers.some(onlineUser => onlineUser.userId === userId);
   };
 
   // Helper function to find user by ID from workspace members
@@ -420,7 +425,7 @@ const Home = () => {
 
   const handleLogout = () => {
     console.log('🚪 Home: Logout initiated');
-    localStorage.removeItem('token');
+    localStorage.clear();
     navigate('/login');
   };
 
@@ -502,10 +507,19 @@ const Home = () => {
     // Set up socket listeners
     socketService.onNewMessage(handleNewMessage);
     
+    // Listen for online users updates
+    const handleOnlineUsers = (users) => {
+      console.log('👥 Home: Online users updated:', users);
+      setOnlineUsers(users);
+    };
+    
+    socketService.onOnlineUsers(handleOnlineUsers);
+    
     // Cleanup function
     return () => {
       console.log('🧹 Home: Cleaning up socket listeners');
       socketService.off('newMessage');
+      socketService.off('onlineUsers');
     };
   }, [isAuthenticated, currentChatId]); // Added currentChatId as dependency
 
@@ -537,7 +551,7 @@ const Home = () => {
     return (
       <div className="left-nav">
         <div className="organization-header">
-          <div className="org-initial">{getUserInitials(currentUser)}</div>
+          <div className="org-initial">{JSON.parse(localStorage.getItem('user')).name.charAt(0).toUpperCase()}</div>
           <div className="org-name">
             {getUserDisplayName(currentUser)}
           </div>
@@ -641,30 +655,79 @@ const Home = () => {
               No members found in this workspace
             </div>
           ) : (
-            workspaceMembers.map((user, index) => (
-              <div 
-                key={user.id || index} 
-                className={`user-item ${selectedUser?.id === user.id ? 'selected' : ''}`}
-                onClick={() => handleUserSelect(user)}
-              >
-                <div className="user-avatar">
-                  {user.avatar ? (
-                    <img src={user.avatar} alt={user.name || 'User'} />
-                  ) : (
-                    <div className="avatar-placeholder">
-                      {(user.name || user.username || 'U').charAt(0).toUpperCase()}
-                    </div>
+            (() => {
+              // Separate users into online and offline groups
+              const onlineMembers = workspaceMembers.filter(user => isUserOnline(user.id));
+              const offlineMembers = workspaceMembers.filter(user => !isUserOnline(user.id));
+              
+              // Sort each group alphabetically
+              const sortAlphabetically = (a, b) => {
+                const aName = (a.name || a.username || '').toLowerCase();
+                const bName = (b.name || b.username || '').toLowerCase();
+                return aName.localeCompare(bName);
+              };
+              
+              onlineMembers.sort(sortAlphabetically);
+              offlineMembers.sort(sortAlphabetically);
+              
+              return (
+                <>
+                  {/* Online Users Section */}
+                  {onlineMembers.length > 0 && (
+                    <>
+                      {onlineMembers.map((user, index) => (
+                        <div 
+                          key={`online-${user.id || index}`} 
+                          className={`user-item ${selectedUser?.id === user.id ? 'selected' : ''}`}
+                          onClick={() => handleUserSelect(user)}
+                        >
+                          <div className="user-avatar">
+                            {user.avatar ? (
+                              <img src={user.avatar} alt={user.name || 'User'} />
+                            ) : (
+                              <div className="avatar-placeholder">
+                                {(user.name || user.username || 'U').charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            <div className="status-indicator online"></div>
+                          </div>
+                          <div className="user-info">
+                            <div className="user-name">{user.name || user.username || `User ${index + 1}`}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </>
                   )}
-                </div>
-                <div className="user-info">
-                  <div className="user-name">{user.name || user.username || `User ${index + 1}`}</div>
-                  <div className={`user-status ${user.status || 'online'}`}>
-                    <span className="status-dot"></span>
-                    {user.status || 'online'}
-                  </div>
-                </div>
-              </div>
-            ))
+                  
+                  {/* Offline Users Section */}
+                  {offlineMembers.length > 0 && (
+                    <>
+                      {offlineMembers.map((user, index) => (
+                        <div 
+                          key={`offline-${user.id || index}`} 
+                          className={`user-item ${selectedUser?.id === user.id ? 'selected' : ''}`}
+                          onClick={() => handleUserSelect(user)}
+                        >
+                          <div className="user-avatar">
+                            {user.avatar ? (
+                              <img src={user.avatar} alt={user.name || 'User'} />
+                            ) : (
+                              <div className="avatar-placeholder">
+                                {(user.name || user.username || 'U').charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            <div className="status-indicator offline"></div>
+                          </div>
+                          <div className="user-info">
+                            <div className="user-name">{user.name || user.username || `User ${index + 1}`}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </>
+              );
+            })()
           )}
         </div>
       </div>
@@ -676,12 +739,17 @@ const Home = () => {
       {selectedUser ? (
         <>
           <div className="chat-header">
+            <div className="user-avatar">
+              {selectedUser.avatar ? (
+                <img src={selectedUser.avatar} alt={selectedUser.name || selectedUser.username || 'User'} />
+              ) : (
+                <div className="avatar-placeholder">
+                  {getUserInitials(selectedUser)}
+                </div>
+              )}
+              <div className={`status-indicator ${isUserOnline(selectedUser.id) ? 'online' : 'offline'}`}></div>
+            </div>
             <h3>{selectedUser.name || selectedUser.username || 'User'}</h3>
-            {currentChatId && (
-              <p style={{ fontSize: '12px', color: '#666', margin: '5px 0 0 0' }}>
-                Chat ID: {currentChatId}
-              </p>
-            )}
           </div>
           <div className="messages-container">
             {loadingMessages ? (

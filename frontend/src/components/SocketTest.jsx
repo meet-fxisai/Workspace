@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Paper, Chip } from '@mui/material';
 import socketService from '../Services/socket.service';
 import { getUser } from '../utils/userUtils';
 
@@ -62,83 +61,90 @@ const SocketTest = () => {
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3, m: 2, maxWidth: 600 }}>
-      <Typography variant="h5" gutterBottom>
+    <div className="bg-white rounded-lg shadow-lg p-6 m-4 max-w-2xl">
+      <h2 className="text-2xl font-bold mb-4">
         Socket Connection Test
-      </Typography>
+      </h2>
       
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="body1">
+      <div className="mb-4">
+        <p className="text-gray-700">
           <strong>Connection Status:</strong>{' '}
-          <Chip 
-            label={connectionStatus} 
-            color={connectionStatus === 'Connected' ? 'success' : 'error'}
-            size="small"
-          />
-        </Typography>
-      </Box>
+          <span 
+            className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+              connectionStatus === 'Connected' 
+                ? 'bg-green-100 text-green-800' 
+                : 'bg-red-100 text-red-800'
+            }`}
+          >
+            {connectionStatus}
+          </span>
+        </p>
+      </div>
 
       {currentUser && (
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="body2">
+        <div className="mb-4">
+          <p className="text-sm text-gray-600">
             <strong>Current User:</strong> {currentUser.name} ({currentUser.email})
-          </Typography>
-        </Box>
+          </p>
+        </div>
       )}
 
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="body1" gutterBottom>
+      <div className="mb-4">
+        <p className="text-gray-700 mb-2">
           <strong>Online Users ({onlineUsers.length}):</strong>
-        </Typography>
+        </p>
         {onlineUsers.length === 0 ? (
-          <Typography variant="body2" color="text.secondary">
+          <p className="text-gray-500 text-sm">
             No online users
-          </Typography>
+          </p>
         ) : (
-          onlineUsers.map((user, index) => (
-            <Chip
-              key={user.socketId}
-              label={`${user.userName} (${user.userEmail})`}
-              variant={user.userId === currentUser?.id ? 'filled' : 'outlined'}
-              color={user.userId === currentUser?.id ? 'primary' : 'default'}
-              size="small"
-              sx={{ mr: 1, mb: 1 }}
-            />
-          ))
+          <div className="flex flex-wrap gap-2">
+            {onlineUsers.map((user, index) => (
+              <span
+                key={user.socketId}
+                className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                  user.userId === currentUser?.id 
+                    ? 'bg-blue-100 text-blue-800' 
+                    : 'bg-gray-100 text-gray-700'
+                }`}
+              >
+                {user.userName} ({user.userEmail})
+              </span>
+            ))}
+          </div>
         )}
-      </Box>
+      </div>
 
-      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-        <Button 
-          variant="contained" 
+      <div className="flex gap-2 flex-wrap">
+        <button 
           onClick={handleConnect}
           disabled={connectionStatus === 'Connected'}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200"
         >
           Connect
-        </Button>
-        <Button 
-          variant="outlined" 
+        </button>
+        <button 
           onClick={handleDisconnect}
           disabled={connectionStatus === 'Disconnected'}
+          className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors duration-200"
         >
           Disconnect
-        </Button>
-        <Button 
-          variant="contained" 
-          color="secondary"
+        </button>
+        <button 
           onClick={sendTestMessage}
           disabled={connectionStatus === 'Disconnected' || onlineUsers.length <= 1}
+          className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200"
         >
           Send Test Message
-        </Button>
-      </Box>
+        </button>
+      </div>
 
-      <Box sx={{ mt: 2 }}>
-        <Typography variant="caption" color="text.secondary">
+      <div className="mt-4">
+        <p className="text-xs text-gray-500">
           This component helps test the socket connection. You should see your name appear in the online users list when connected.
-        </Typography>
-      </Box>
-    </Paper>
+        </p>
+      </div>
+    </div>
   );
 };
 

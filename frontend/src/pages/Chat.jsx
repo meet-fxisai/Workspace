@@ -5,12 +5,7 @@ import {
   searchQuery,
 } from "../Services/auth.service";
 import { toast } from "react-toastify";
-import { Typography, Box, useMediaQuery, Grid } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 import Navbar from "../components/Navbar";
-import CheckIcon from "@mui/icons-material/Check";
-import ClearIcon from "@mui/icons-material/Clear";
-import ChatIcon from "@mui/icons-material/Chat";
 import {
   acceptRequest,
   rejectRequest,
@@ -166,7 +161,7 @@ export default function Chat({ changeAuth, auth }) {
     setQuery(event.target.value);
   };
 
-  const isSmallScreen = useMediaQuery("(max-width:600px)");
+  const isSmallScreen = window.innerWidth <= 600;
 
   const isOnline = (userId) => {
     return onlineUsers.some((user) => user.userId === userId);
@@ -175,20 +170,19 @@ export default function Chat({ changeAuth, auth }) {
   return (
     <>
       <Navbar auth={auth} changeAuth={changeAuth} user={user} />
-      <Grid container sx={{ height: "91.5vh" }}>
+      <div className="flex h-screen" style={{ height: "91.5vh" }}>
         {/* Friends list for both mobile and desktop screens */}
         {(currChat === null || !isSmallScreen) && (
-          <Grid
-            item
-            xs={isSmallScreen ? 12 : 3}
-            sx={{
+          <div
+            className={`${
+              isSmallScreen ? "w-full" : "w-1/4"
+            } border-r border-gray-300 overflow-y-auto bg-gray-100`}
+            style={{
               borderRight: isSmallScreen ? "none" : "1px solid #ccc",
-              overflowY: "auto",
-              backgroundColor: "whitesmoke",
             }}
           >
-            <Box sx={{ padding: 2 }}>
-              <Typography variant="h6">Friends</Typography>
+            <div className="p-4">
+              <h2 className="text-xl font-semibold mb-4">Friends</h2>
               <FriendList
                 friends={friends}
                 user={user}
@@ -196,20 +190,18 @@ export default function Chat({ changeAuth, auth }) {
                 currChat={currChat}
                 isOnline={isOnline}
               />
-            </Box>
-          </Grid>
+            </div>
+          </div>
         )}
 
         {/* Chat container for both mobile and desktop screens */}
         {(currChat !== null || !isSmallScreen) && (
-          <Grid
-            item
-            xs={isSmallScreen ? 12 : 9}
-            sx={{
-              overflowY: "auto",
-            }}
+          <div
+            className={`${
+              isSmallScreen ? "w-full" : "w-3/4"
+            } overflow-y-auto`}
           >
-            <Box sx={{ padding: 0 }}>
+            <div className="p-0">
               <ChatContainer
                 small={isSmallScreen}
                 currFriend={currFriend}
@@ -222,10 +214,10 @@ export default function Chat({ changeAuth, auth }) {
                 send={sendMessageToSocketandDb}
                 handleBack={handleBack}
               />
-            </Box>
-          </Grid>
+            </div>
+          </div>
         )}
-      </Grid>
+      </div>
     </>
   );
 }

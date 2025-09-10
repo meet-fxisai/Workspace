@@ -1,27 +1,21 @@
-import React, { useEffect, useState, useMemo } from "react";
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Button,
-  Menu,
-  MenuItem,
-  IconButton
-} from "@mui/material";
-import LogoutIcon from '@mui/icons-material/Logout';
-import ChatIcon from "@mui/icons-material/Chat";
-import WorkspacesIcon from '@mui/icons-material/Workspaces';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { deleteToken } from "../Services/auth.service";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { 
+  LogOut, 
+  MessageCircle, 
+  Layers, 
+  ChevronDown, 
+  Menu, 
+  X 
+} from 'lucide-react';
+import socketService from '../Services/socket.service';
 import { useNavigate } from "react-router-dom";
 
 export default function Navbar({ switchFn, auth, changeAuth, user, onWorkspaceSelect }) {
-  const [open, setOpen] = useState(false);
-  const [currAvatar, setcurrAvatar] = useState("");
   const [workspaces, setWorkspaces] = useState([]);
   const [workspaceMenuAnchor, setWorkspaceMenuAnchor] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selectedWorkspace, setSelectedWorkspace] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   // Function to get current user from token
@@ -47,11 +41,11 @@ export default function Navbar({ switchFn, auth, changeAuth, user, onWorkspaceSe
   };
 
   // Memoize currentUser to prevent unnecessary re-renders
-  const currentUser = useMemo(() => getCurrentUser(), [auth]);
+  const currentUser = useMemo(() => getCurrentUser(), []);
   const isAdmin = currentUser?.role === 'admin';
 
   // Function to fetch user workspaces - works for all users including admins
-  const fetchUserWorkspaces = async () => {
+  const fetchUserWorkspaces = useCallback(async () => {
     if (!currentUser?.id) return;
     
     setLoading(true);
@@ -89,15 +83,11 @@ export default function Navbar({ switchFn, auth, changeAuth, user, onWorkspaceSe
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser?.id]);
 
   useEffect(() => {
     if (user) {
-      if (user.gender === "Male") {
-        setcurrAvatar("male.png");
-      } else {
-        setcurrAvatar("female.png");
-      }
+      // Avatar logic can be added here if needed in the future
     }
   }, [user]);
 
@@ -106,7 +96,7 @@ export default function Navbar({ switchFn, auth, changeAuth, user, onWorkspaceSe
     if (auth && currentUser?.id) {
       fetchUserWorkspaces();
     }
-  }, [auth, currentUser?.id]);
+  }, [auth, currentUser?.id, fetchUserWorkspaces]);
 
   const handleLogoClick = () => {
     if(auth)
@@ -138,104 +128,202 @@ export default function Navbar({ switchFn, auth, changeAuth, user, onWorkspaceSe
     }
     
     handleWorkspaceMenuClose();
+    setMobileMenuOpen(false); // Close mobile menu on selection
+  };
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const handleLogout = () => {
+    console.log('Logout clicked from Navbar');
+    // Clear all localStorage data
+    localStorage.clear();
+    
+    // Disconnect socket
+    if (typeof socketService !== 'undefined' && socketService.disconnect) {
+      socketService.disconnect();
+    }
+    
+    // Update auth state
+    if (changeAuth) {
+      changeAuth(false);
+    }
+    
+    // Navigate to login
+    navigate('/login');
+    setMobileMenuOpen(false); // Close mobile menu
   };
 
   return (
-    <AppBar position="static" sx={{ backgroundColor: "black" }}> 
-      <Toolbar className="flex justify-between">
-        <div className="flex items-center gap-2 cursor-pointer" onClick={handleLogoClick}>
-          <ChatIcon  sx={{ color: "white" }} />
-          <Typography variant="h5" sx={{ color: "white" }}>
-            QuickChat
-          </Typography>
-        </div>
+    <nav className="bg-black text-white shadow-lg">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo Section */}
+          <div 
+            className="flex items-center gap-2 cursor-pointer hover:text-gray-300 transition-colors duration-200" 
+            onClick={handleLogoClick}
+          >
+            <MessageCircle className="w-6 h-6 text-white" />
+            <h1 className="text-xl font-semibold">QuickChat</h1>
+          </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          {/* Desktop Navigation */}
           {auth && (
-            <>
-              {/* Workspaces Dropdown - Show for ALL authenticated users */}
-              <Button
-                variant="outlined"
-                onClick={handleWorkspaceMenuOpen}
-                disabled={loading}
-                startIcon={<WorkspacesIcon />}
-                endIcon={<ExpandMoreIcon />}
-                sx={{
-                  color: '#ffffff',
-                  borderColor: '#ffffff',
-                  textTransform: 'none',
-                  fontWeight: '600',
-                  fontSize: '14px',
-                  padding: '6px 16px',
-                  '&:hover': {
-                    backgroundColor: '#ffffff',
-                    color: '#000000',
-                    borderColor: '#ffffff'
-                  }
-                }}
-              >
-                {loading ? 'Loading...' : (selectedWorkspace ? selectedWorkspace.name : 'Workspaces')}
-              </Button>
+            <div className="hidden md:flex items-center space-x-4">
+              {/* Workspaces Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={handleWorkspaceMenuOpen}
+                  disabled={loading}
+                  className="flex items-center gap-2 px-4 py-2 border border-white rounded-md text-white text-sm font-medium hover:bg-white hover:text-black transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Layers className="w-4 h-4" />
+                  {loading ? 'Loading...' : (selectedWorkspace ? selectedWorkspace.name : 'Workspaces')}
+                  <ChevronDown className="w-4 h-4" />
+                </button>
 
-              <Menu
-                anchorEl={workspaceMenuAnchor}
-                open={Boolean(workspaceMenuAnchor)}
-                onClose={handleWorkspaceMenuClose}
-                PaperProps={{
-                  sx: {
-                    maxHeight: 200,
-                    minWidth: 200
-                  }
-                }}
-              >
-                {!Array.isArray(workspaces) || workspaces.length === 0 ? (
-                  <MenuItem disabled>
-                    {loading ? 'Loading workspaces...' : 'No workspaces available'}
-                  </MenuItem>
-                ) : (
-                  workspaces.map((workspace) => (
-                    <MenuItem
-                      key={workspace.id}
-                      onClick={() => handleWorkspaceSelect(workspace)}
-                      selected={selectedWorkspace?.id === workspace.id}
-                    >
-                      {workspace.name}
-                    </MenuItem>
-                  ))
+                {/* Dropdown Menu */}
+                {workspaceMenuAnchor && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 max-h-48 overflow-y-auto">
+                    <div className="py-1">
+                      {!Array.isArray(workspaces) || workspaces.length === 0 ? (
+                        <div className="px-4 py-2 text-sm text-gray-500 cursor-not-allowed">
+                          {loading ? 'Loading workspaces...' : 'No workspaces available'}
+                        </div>
+                      ) : (
+                        workspaces.map((workspace) => (
+                          <button
+                            key={workspace.id}
+                            onClick={() => handleWorkspaceSelect(workspace)}
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors duration-150 ${
+                              selectedWorkspace?.id === workspace.id ? 'bg-gray-100 text-black font-medium' : 'text-gray-700'
+                            }`}
+                          >
+                            {workspace.name}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </div>
                 )}
-              </Menu>
+              </div>
 
               {/* Admin-only Register User button */}
               {isAdmin && (
-                <Button
-                  variant="outlined"
+                <button
                   onClick={handleRegisterUser}
-                  sx={{
-                    color: '#ffffff',
-                    borderColor: '#ffffff',
-                    textTransform: 'none',
-                    fontWeight: '600',
-                    fontSize: '14px',
-                    padding: '6px 16px',
-                    '&:hover': {
-                      backgroundColor: '#ffffff',
-                      color: '#000000',
-                      borderColor: '#ffffff'
-                    }
-                  }}
+                  className="px-4 py-2 border border-white rounded-md text-white text-sm font-medium hover:bg-white hover:text-black transition-colors duration-200"
                 >
                   Register User
-                </Button>
+                </button>
               )}
 
-              
-
-            </>
+              {/* Logout Button */}
+              <button
+                onClick={handleLogout}
+                className="p-2 rounded-md text-white hover:bg-white hover:bg-opacity-10 transition-colors duration-200"
+                title="Logout"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
           )}
 
-         
+          {/* Mobile menu button */}
+          {auth && (
+            <div className="md:hidden">
+              <button
+                onClick={toggleMobileMenu}
+                className="p-2 rounded-md text-white hover:bg-white hover:bg-opacity-10 transition-colors duration-200"
+              >
+                {mobileMenuOpen ? (
+                  <X className="w-6 h-6" />
+                ) : (
+                  <Menu className="w-6 h-6" />
+                )}
+              </button>
+            </div>
+          )}
         </div>
-      </Toolbar>
-    </AppBar>
+
+        {/* Mobile Navigation Menu */}
+        {auth && mobileMenuOpen && (
+          <div className="md:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1 border-t border-gray-700">
+              {/* Mobile Workspaces Section */}
+              <div className="space-y-2">
+                <button
+                  onClick={handleWorkspaceMenuOpen}
+                  disabled={loading}
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-md text-white text-sm font-medium border border-white hover:bg-white hover:text-black transition-colors duration-200 disabled:opacity-50"
+                >
+                  <div className="flex items-center gap-2">
+                    <Layers className="w-4 h-4" />
+                    {loading ? 'Loading...' : (selectedWorkspace ? selectedWorkspace.name : 'Workspaces')}
+                  </div>
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+
+                {/* Mobile Workspaces Dropdown */}
+                {workspaceMenuAnchor && (
+                  <div className="bg-gray-800 rounded-md max-h-48 overflow-y-auto">
+                    {!Array.isArray(workspaces) || workspaces.length === 0 ? (
+                      <div className="px-3 py-2 text-sm text-gray-400">
+                        {loading ? 'Loading workspaces...' : 'No workspaces available'}
+                      </div>
+                    ) : (
+                      workspaces.map((workspace) => (
+                        <button
+                          key={workspace.id}
+                          onClick={() => handleWorkspaceSelect(workspace)}
+                          className={`w-full text-left px-3 py-2 text-sm rounded-md transition-colors duration-150 ${
+                            selectedWorkspace?.id === workspace.id 
+                              ? 'bg-gray-600 text-white font-medium' 
+                              : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                          }`}
+                        >
+                          {workspace.name}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Mobile Admin Register Button */}
+              {isAdmin && (
+                <button
+                  onClick={() => {
+                    handleRegisterUser();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-md text-white text-sm font-medium border border-white hover:bg-white hover:text-black transition-colors duration-200"
+                >
+                  Register User
+                </button>
+              )}
+
+              {/* Mobile Logout Button */}
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-white text-sm font-medium hover:bg-red-600 transition-colors duration-200"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Backdrop for closing dropdown */}
+      {workspaceMenuAnchor && (
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={handleWorkspaceMenuClose}
+        />
+      )}
+    </nav>
   );
 }
